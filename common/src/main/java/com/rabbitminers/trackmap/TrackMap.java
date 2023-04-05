@@ -1,5 +1,8 @@
 package com.rabbitminers.trackmap;
 
+import com.rabbitminers.trackmap.http.routes.GraphRoute;
+import com.rabbitminers.trackmap.http.routes.HomeRoute;
+import com.rabbitminers.trackmap.http.TrackMapServer;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +15,7 @@ public class TrackMap {
 
 
     public static void init() {
-
+        TrackMapServer.addRoutes(new HomeRoute(), new GraphRoute());
     }
 
     public static ResourceLocation asResource(String path) {
