@@ -12,7 +12,7 @@ public class ExampleMod {
 
 
     public static void init() {
-        ExampleBlocks.init();
+
     }
 
     public static ResourceLocation id(String path) {
