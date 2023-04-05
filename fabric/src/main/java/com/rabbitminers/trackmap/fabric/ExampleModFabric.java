@@ -1,8 +1,8 @@
-package net.examplemod.fabric;
+package com.rabbitminers.trackmap.fabric;
 
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-import net.examplemod.ExampleBlocks;
-import net.examplemod.ExampleMod;
+import com.rabbitminers.trackmap.ExampleBlocks;
+import com.rabbitminers.trackmap.ExampleMod;
 import net.fabricmc.api.ModInitializer;
 
 public class ExampleModFabric implements ModInitializer {
