@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.rabbitminers.trackmap.fabric.ExampleModFabric"
+      "com.rabbitminers.trackmap.fabric.TrackMapFabric"
     ]
   },
   "mixins": [

@@ -1,11 +1,10 @@
 package com.rabbitminers.trackmap;
 
-import com.simibubi.create.Create;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ExampleMod {
+public class TrackMap {
     public static final String MOD_ID = "trackmap";
     public static final String NAME = "Track Map";
     public static final Logger LOGGER = LoggerFactory.getLogger(NAME);
