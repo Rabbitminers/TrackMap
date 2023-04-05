@@ -1,12 +1,19 @@
 package com.rabbitminers.trackmap.http;
 
+import com.rabbitminers.trackmap.TrackMap;
+import com.rabbitminers.trackmap.http.routes.base.HttpHandler;
+import com.rabbitminers.trackmap.http.util.HttpHelper;
+import com.rabbitminers.trackmap.http.util.HttpMethod;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TrackMapServer implements Closeable {
+    private static final Map<String, HttpHandler> routes = new HashMap<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     public boolean isOpen = true;
     final int port;
@@ -15,7 +22,7 @@ public class TrackMapServer implements Closeable {
     public static Thread newInstance(int port) {
         return new Thread(() -> {
             try {
-                new TrackMapServer(port);
+                TrackMapServer server = new TrackMapServer(port);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -25,21 +32,21 @@ public class TrackMapServer implements Closeable {
     public TrackMapServer(int port) throws IOException {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
-        System.out.println("Server running on port " + port);
+        TrackMap.LOGGER.info("Server running on port " + port);
 
         while (this.isOpen) {
             try {
                 Socket clientSocket = this.serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getInetAddress());
+                TrackMap.LOGGER.info("Client connected: " + clientSocket.getInetAddress());
 
                 this.executorService.submit(() -> handleConnection(clientSocket));
             } catch (IOException e) {
-                System.err.println("Error accepting client connection: " + e.getMessage());
+                TrackMap.LOGGER.info("Error accepting client connection: " + e.getMessage());
             }
         }
 
         serverSocket.close();
-        System.out.println("Server stopped");
+        TrackMap.LOGGER.info("Server stopped");
     }
 
     private static void handleConnection(Socket clientSocket) {
@@ -48,29 +55,54 @@ public class TrackMapServer implements Closeable {
             OutputStream out = clientSocket.getOutputStream();
 
             String request = in.readLine();
-            if (request == null) {
+            if (request == null)
+                return;
+            TrackMap.LOGGER.info("Request: " + request);
+            String[] requestParts = request.split(" ");
+            if (requestParts.length < 2)
+                return;
+            HttpMethod method = HttpMethod.fromString(requestParts[0]);
+            if (method == null) {
+                HttpHelper.writeMethodNotAllowed(out);
                 return;
             }
-            System.out.println("Request: " + request);
+            String path = requestParts[1];
 
-            String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, world!";
-            out.write(response.getBytes());
+            HttpHandler handler = routes.get(path);
+            if (handler != null) {
+                handler.handle(out, method);
+            } else {
+                HttpHelper.writeFileNotFound(out);
+            }
 
-            System.out.println("Response sent");
+            TrackMap.LOGGER.info("Response sent");
         } catch (IOException e) {
-            System.err.println("Error handling client connection: " + e.getMessage());
+            TrackMap.LOGGER.error("Error handling client connection: " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
-                System.out.println("Client disconnected");
+                TrackMap.LOGGER.info("Client disconnected");
             } catch (IOException e) {
-                System.err.println("Error closing client socket: " + e.getMessage());
+                TrackMap.LOGGER.error("Error closing client socket: " + e.getMessage());
             }
         }
+    }
+
+    public static void addRoutes(HttpHandler... handlers) {
+        Arrays.stream(handlers).forEach(TrackMapServer::addRoute);
+    }
+
+    public static void addRoute(HttpHandler httpHandler) {
+        routes.put(httpHandler.getPath(), httpHandler);
+    }
+
+    public static Collection<HttpHandler> getRoutes() {
+        return routes.values();
     }
 
     @Override
     public void close() throws IOException {
         this.isOpen = false;
+        TrackMap.LOGGER.info("Ending Webserver");
     }
 }
