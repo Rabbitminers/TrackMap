@@ -13,6 +13,6 @@ public class TrackMapEventsFabric {
     }
 
     public static void register() {
-        ServerWorldEvents.LOAD.register(CommonEvents::onLoadWorld);
+        ServerWorldEvents.LOAD.register(TrackMapEventsFabric::onLoadWorld);
     }
 }

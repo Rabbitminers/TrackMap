@@ -4,9 +4,16 @@ import com.rabbitminers.trackmap.TrackMap;
 import com.rabbitminers.trackmap.http.TrackMapServer;
 import net.minecraft.world.level.LevelAccessor;
 
+import java.io.IOException;
+
 public class TrackMapCommonEvents {
     public static void onWorldLoad(LevelAccessor levelAccessor) {
-        TrackMap.server = TrackMapServer.newInstance(8080);
-        TrackMap.server.start();
+        new Thread(() -> {
+            try {
+                new TrackMapServer(8080);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 }
