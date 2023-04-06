@@ -1,20 +1,25 @@
 <template>
   <main>
-      Hello world!
-      <div class="test">Test <button>Test2</button></div>
+    <TrackMap/>
   </main>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+import TrackMap from '@/components/TrackMap.vue'
+
+export default {
+  components: {
+      TrackMap
+  }
+}
 
 </script>
 
 <style lang="scss">
-.test {
-  background-color: red;
-
-  button {
-    background-color: orange;
-  }
+main {
+  border-radius: 10px;
+  background-color: var(--color-background-mute);
+  margin: auto;
+  max-width: 1024px;
 }
 </style>
