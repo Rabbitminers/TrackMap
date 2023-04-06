@@ -7,6 +7,8 @@ import com.simibubi.create.content.logistics.trains.TrackEdge;
 import com.simibubi.create.content.logistics.trains.TrackGraph;
 import com.simibubi.create.content.logistics.trains.TrackNode;
 import com.simibubi.create.content.logistics.trains.TrackNodeLocation;
+import com.simibubi.create.content.logistics.trains.entity.Carriage;
+import com.simibubi.create.content.logistics.trains.entity.Train;
 import com.simibubi.create.foundation.utility.Couple;
 import net.minecraft.world.phys.Vec3;
 
@@ -14,22 +16,57 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class TrackGraphSerializer {
-    public static JsonArray serializeNetworks() {
-        Set<Entry<UUID, TrackGraph>> networks = Create.RAILWAYS.trackNetworks.entrySet();
-        return networks.stream().map(network -> serializeNetwork(network.getValue()))
+    public static JsonArray serializeTrains() {
+        Set<Entry<UUID, Train>> trains = Create.RAILWAYS.trains.entrySet();
+        return trains.stream().map(train -> serializeTrain(train.getValue()))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
-    private static JsonObject serializeNetwork(TrackGraph graph) {
+    public static JsonObject serializeTrain(Train train) {
+        JsonObject object = new JsonObject();
+        object.addProperty("owner", train.owner.toString());
+        object.addProperty("speed", train.speed);
+        object.addProperty("id", train.speed);
+        object.addProperty("name", train.name.toString());
+        JsonArray carriages = train.carriages.stream().map(TrackGraphSerializer::serializeCarriage)
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+        object.add("carriages", carriages);
+        object.addProperty("distance", train.navigation.distanceToDestination);
+        return object;
+    }
+
+    public static JsonObject serializeCarriage(Carriage carriage) {
+        return new JsonObject();
+    }
+
+    public static JsonArray serializeAllNodes() {
+        Set<Entry<UUID, TrackGraph>> networks = Create.RAILWAYS.trackNetworks.entrySet();
+        return networks.stream().map(network -> serializeNetworkNodes(network.getValue()))
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    public static JsonArray serializeAllConnections() {
+        Set<Entry<UUID, TrackGraph>> networks = Create.RAILWAYS.trackNetworks.entrySet();
+        return networks.stream().map(network -> serializeNetworkConnections(network.getValue()))
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    public static JsonObject serializeNetworkConnections(TrackGraph graph) {
+        JsonObject object = new JsonObject();
+        object.addProperty("id", graph.id.toString());
+        JsonArray connections = serializeConnections(graph);
+        object.add("connections", connections);
+        return object;
+    }
+
+    public static JsonObject serializeNetworkNodes(TrackGraph graph) {
         Set<TrackNodeLocation> nodes = graph.getNodes();
         JsonObject object = new JsonObject();
         object.addProperty("id", graph.id.toString());
         JsonArray serializedNodes = nodes.stream().map(graph::locateNode)
                 .map(TrackGraphSerializer::serializeNode)
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-        // (Nodes now serialized in connections) object.add("nodes", serializedNodes);
-        JsonArray connections = serializeConnections(graph);
-        object.add("connections", connections);
+        object.add("nodes", serializedNodes);
         return object;
     }
 
@@ -43,17 +80,24 @@ public class TrackGraphSerializer {
     }
 
     private static JsonArray serializeConnections(TrackGraph graph) {
-        final Set<TrackEdge> existing = new HashSet<>();
+        final Set<Integer> existing = new HashSet<>();
         return graph.getNodes().stream()
                 .map(graph::locateNode)
                 .flatMap(node -> graph.getConnectionsFrom(node).values().stream())
-                .filter(edge -> !existing.contains(edge))
-                .collect(JsonArray::new, (array, edge) -> array.add(serializeConnection(edge, existing)), JsonArray::addAll);
+                .filter(connection -> filterConnection(connection, existing))
+                .collect(JsonArray::new, (array, edge) -> array.add(serializeConnection(edge)), JsonArray::addAll);
     }
 
-    private static JsonObject serializeConnection(TrackEdge edge, Set<TrackEdge> existing) {
+    private static boolean filterConnection(TrackEdge connection, Set<Integer> existing) {
+        int node1ID = connection.node1.getNetId(), node2ID = connection.node2.getNetId();
+        int hashCode = (node1ID * 31) + node2ID;
+        boolean exists = existing.contains(hashCode);
+        if (!exists) existing.add(hashCode);
+        return !exists;
+    }
+
+    private static JsonObject serializeConnection(TrackEdge edge) {
         JsonObject connection = new JsonObject();
-        existing.add(edge);
         connection.addProperty("length", edge.getLength());
         connection.add("first", serializeNode(edge.node1));
         connection.add("second", serializeNode(edge.node2));
