@@ -27,7 +27,7 @@ public class TrackGraphSerializer {
         JsonArray serializedNodes = nodes.stream().map(graph::locateNode)
                 .map(TrackGraphSerializer::serializeNode)
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-        object.add("nodes", serializedNodes);
+        // (Nodes now serialized in connections) object.add("nodes", serializedNodes);
         JsonArray connections = serializeConnections(graph);
         object.add("connections", connections);
         return object;
@@ -43,17 +43,20 @@ public class TrackGraphSerializer {
     }
 
     private static JsonArray serializeConnections(TrackGraph graph) {
+        final Set<TrackEdge> existing = new HashSet<>();
         return graph.getNodes().stream()
                 .map(graph::locateNode)
                 .flatMap(node -> graph.getConnectionsFrom(node).values().stream())
-                .collect(JsonArray::new, (array, edge) -> array.add(serializeConnection(edge)), JsonArray::addAll);
+                .filter(edge -> !existing.contains(edge))
+                .collect(JsonArray::new, (array, edge) -> array.add(serializeConnection(edge, existing)), JsonArray::addAll);
     }
 
-    private static JsonObject serializeConnection(TrackEdge edge) {
+    private static JsonObject serializeConnection(TrackEdge edge, Set<TrackEdge> existing) {
         JsonObject connection = new JsonObject();
+        existing.add(edge);
         connection.addProperty("length", edge.getLength());
-        connection.addProperty("first", edge.node1.getNetId());
-        connection.addProperty("second", edge.node2.getNetId());
+        connection.add("first", serializeNode(edge.node1));
+        connection.add("second", serializeNode(edge.node2));
         return connection;
     }
 
