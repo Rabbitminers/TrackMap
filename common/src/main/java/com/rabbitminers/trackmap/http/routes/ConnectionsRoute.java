@@ -3,21 +3,20 @@ package com.rabbitminers.trackmap.http.routes;
 import com.google.gson.JsonArray;
 import com.rabbitminers.trackmap.TrackMap;
 import com.rabbitminers.trackmap.http.routes.base.HttpHandler;
-import com.rabbitminers.trackmap.http.util.HttpHelper;
 import com.rabbitminers.trackmap.http.util.HttpMethod;
 import com.rabbitminers.trackmap.tracks.TrackGraphSerializer;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class GraphRoute extends HttpHandler {
-    public GraphRoute() {
+public class ConnectionsRoute extends HttpHandler {
+    public ConnectionsRoute() {
         this.handlers.put(HttpMethod.GET, this::handleGet);
     }
 
     public void handleGet(OutputStream out) {
         try {
-            JsonArray data = TrackGraphSerializer.serializeNetworks();
+            JsonArray data = TrackGraphSerializer.serializeAllConnections();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
@@ -29,6 +28,6 @@ public class GraphRoute extends HttpHandler {
 
     @Override
     public String getPath() {
-        return "/path/";
+        return "/connections/";
     }
 }
