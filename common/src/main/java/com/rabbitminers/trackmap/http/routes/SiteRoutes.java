@@ -8,7 +8,7 @@ import java.io.InputStream;
 public class SiteRoutes {
     public static HttpServer.HttpHandler home = (out, method, params) -> {
         if (method.equals("GET")) {
-            InputStream fileStream = HomeRoute.class.getClassLoader().getResourceAsStream("web/index.html");
+            InputStream fileStream = SiteRoutes.class.getClassLoader().getResourceAsStream("web/index.html");
             if (fileStream == null) {
                 HttpHelper.writeFileNotFound(out);
                 return;
