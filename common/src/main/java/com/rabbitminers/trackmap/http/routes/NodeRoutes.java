@@ -12,7 +12,7 @@ public class NodeRoutes {
     public static HttpServer.HttpHandler allNodes = (out, method, params) -> {
         if (method.equals("GET")) {
             JsonArray data = TrackGraphSerializer.serializeAllNodes();
-            String response = data.getAsString();
+            String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
@@ -41,7 +41,7 @@ public class NodeRoutes {
                 out.write("\r\n".getBytes());
                 return;
             }
-            String response = data.getAsString();
+            String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());

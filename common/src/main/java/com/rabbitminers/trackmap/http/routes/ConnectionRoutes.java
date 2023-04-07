@@ -11,7 +11,7 @@ public class ConnectionRoutes {
     public static HttpServer.HttpHandler allConnections = (out, method, params) -> {
         if (method.equals("GET")) {
             JsonArray data = TrackGraphSerializer.serializeAllConnections();
-            String response = data.getAsString();
+            String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
@@ -42,7 +42,7 @@ public class ConnectionRoutes {
                 out.flush();
                 return;
             }
-            String response = data.getAsString();
+            String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
