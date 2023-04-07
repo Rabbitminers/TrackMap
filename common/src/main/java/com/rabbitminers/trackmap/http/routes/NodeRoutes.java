@@ -30,15 +30,17 @@ public class NodeRoutes {
             try {
                 String pathVar = params.get("var1");
                 networkId = UUID.fromString(pathVar);
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
                 out.write("HTTP/1.1 400 Bad Request\r\n".getBytes());
                 out.write("\r\n".getBytes());
+                out.flush();
                 return;
             }
             JsonObject data = TrackGraphSerializer.serializeNetworkNodes(networkId);
             if (data == null) {
                 out.write("HTTP/1.1 418 I'm a teapot\r\n".getBytes());
                 out.write("\r\n".getBytes());
+                out.flush();
                 return;
             }
             String response = data.toString();
@@ -49,6 +51,7 @@ public class NodeRoutes {
         } else {
             out.write("HTTP/1.1 405 Method Not Allowed\r\n".getBytes());
             out.write("\r\n".getBytes());
+            out.flush();
         }
     };
 
