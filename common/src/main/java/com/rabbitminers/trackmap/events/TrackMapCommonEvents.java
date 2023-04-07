@@ -4,6 +4,7 @@ import com.rabbitminers.trackmap.TrackMap;
 import com.rabbitminers.trackmap.http.HttpServer;
 import com.rabbitminers.trackmap.http.TrackMapServer;
 import com.rabbitminers.trackmap.http.routes.ConnectionRoutes;
+import com.rabbitminers.trackmap.http.routes.NetworkRoutes;
 import com.rabbitminers.trackmap.http.routes.NodeRoutes;
 import com.rabbitminers.trackmap.http.routes.SiteRoutes;
 import net.minecraft.world.level.LevelAccessor;
@@ -18,6 +19,7 @@ public class TrackMapCommonEvents {
             ConnectionRoutes.init(server);
             NodeRoutes.init(server);
             SiteRoutes.init(server);
+            NetworkRoutes.init(server);
             server.start();
         } catch (IOException e) {
             TrackMap.LOGGER.error("Failed to start server " + e);

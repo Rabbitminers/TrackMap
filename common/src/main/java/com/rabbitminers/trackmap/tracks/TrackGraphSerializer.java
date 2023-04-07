@@ -15,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class TrackGraphSerializer {
     public static JsonArray serializeTrains() {
@@ -38,6 +39,12 @@ public class TrackGraphSerializer {
 
     public static JsonObject serializeCarriage(Carriage carriage) {
         return new JsonObject();
+    }
+
+    public static JsonArray getAllNetworks() {
+        Set<Entry<UUID, TrackGraph>> networks = Create.RAILWAYS.trackNetworks.entrySet();
+        return networks.stream().map(network -> network.getKey().toString())
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
     public static JsonArray serializeAllNodes() {
