@@ -1,5 +1,7 @@
 package com.rabbitminers.trackmap.http;
 
+import org.apache.commons.logging.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +30,7 @@ public class HttpServer {
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
+                    LOGGER.info("Client connected: " + clientSocket.getInetAddress());
                     new Thread(() -> handleRequest(clientSocket)).start();
                 } catch (IOException e) {
                     LOGGER.error("Failed to start webserver " + e);
