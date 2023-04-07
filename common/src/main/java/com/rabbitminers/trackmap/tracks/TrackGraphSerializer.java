@@ -12,6 +12,7 @@ import com.simibubi.create.content.logistics.trains.entity.Train;
 import com.simibubi.create.foundation.utility.Couple;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -51,12 +52,28 @@ public class TrackGraphSerializer {
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
+    @Nullable
+    public static JsonObject serializeNetworkConnections(UUID networkId) {
+        JsonObject object = new JsonObject();
+        TrackGraph graph = Create.RAILWAYS.trackNetworks.get(networkId);
+        if (graph == null) return null;
+        return serializeNetworkConnections(graph);
+    }
+
     public static JsonObject serializeNetworkConnections(TrackGraph graph) {
         JsonObject object = new JsonObject();
         object.addProperty("id", graph.id.toString());
         JsonArray connections = serializeConnections(graph);
         object.add("connections", connections);
         return object;
+    }
+
+    @Nullable
+    public static JsonObject serializeNetworkNodes(UUID networkId) {
+        JsonObject object = new JsonObject();
+        TrackGraph graph = Create.RAILWAYS.trackNetworks.get(networkId);
+        if (graph == null) return null;
+        return serializeNetworkNodes(graph);
     }
 
     public static JsonObject serializeNetworkNodes(TrackGraph graph) {
