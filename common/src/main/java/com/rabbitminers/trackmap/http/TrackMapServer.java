@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Deprecated
 public class TrackMapServer implements Closeable {
     private static final Map<String, HttpHandler> routes = new HashMap<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -66,11 +67,13 @@ public class TrackMapServer implements Closeable {
                 HttpHelper.writeMethodNotAllowed(out);
                 return;
             }
-            String path = requestParts[1];
+            String fullPath = requestParts[1];
+            String path = fullPath;
 
-            HttpHandler handler = routes.get(path);
+            HttpHandler handler = routes.get(fullPath);
+
             if (handler != null) {
-                handler.handle(out, method);
+                handler.handle(out, "", method);
             } else {
                 HttpHelper.writeFileNotFound(out);
             }
