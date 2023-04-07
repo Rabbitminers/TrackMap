@@ -55,12 +55,17 @@ public class HttpServer {
                 sendErrorResponse(clientSocket.getOutputStream(), "400 Bad Request", "Invalid request path");
                 return;
             }
-
-            HttpHandler handler = handlers.get(pathParts[1]);
-
-            System.out.println(path);
-            handlers.forEach((name, h) -> System.out.println(name));
-
+            StringBuilder normalizedPathBuilder = new StringBuilder();
+            for (int i = 1; i < pathParts.length; i++) {
+                String pathPart = pathParts[i];
+                if (pathPart.startsWith(":") && pathPart.endsWith(":")) {
+                    normalizedPathBuilder.append("/{var").append(i).append("}");
+                } else {
+                    normalizedPathBuilder.append("/").append(pathPart);
+                }
+            }
+            String normalizedPath = normalizedPathBuilder.toString();
+            HttpHandler handler = handlers.get(normalizedPath);
             if (handler == null) {
                 sendErrorResponse(clientSocket.getOutputStream(), "404 Not Found", "No handler found for path: " + path);
                 return;
@@ -82,10 +87,8 @@ public class HttpServer {
         Map<String, String> pathParams = new HashMap<>();
         for (int i = 2; i < pathParts.length; i++) {
             String pathPart = pathParts[i];
-            if (pathPart.startsWith("{") && pathPart.endsWith("}")) {
-                String pathParamName = pathPart.substring(1, pathPart.length() - 1);
-                pathParams.put(pathParamName, pathParts[i + 1]);
-            }
+            if (pathPart.startsWith(":") && pathPart.endsWith(":"))
+                pathParams.put("var" + (i - 1), pathPart);
         }
         return pathParams;
     }
@@ -101,8 +104,20 @@ public class HttpServer {
     }
 
     public void addHandler(String path, HttpHandler handler) {
-        handlers.put(path, handler);
+        String[] pathParts = path.split("/");
+        StringBuilder normalizedPathBuilder = new StringBuilder();
+        for (int i = 1; i < pathParts.length; i++) {
+            String pathPart = pathParts[i];
+            if (pathPart.startsWith("{") && pathPart.endsWith("}")) {
+                normalizedPathBuilder.append("/{var").append(i).append("}");
+            } else {
+                normalizedPathBuilder.append("/").append(pathPart);
+            }
+        }
+        String normalizedPath = normalizedPathBuilder.toString();
+        handlers.put(normalizedPath, handler);
     }
+
 
     @FunctionalInterface
     public interface HttpHandler {
