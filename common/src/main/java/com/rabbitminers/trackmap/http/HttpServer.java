@@ -91,7 +91,7 @@ public class HttpServer {
         for (int i = 2; i < pathParts.length; i++) {
             String pathPart = pathParts[i];
             if (pathPart.startsWith(":") && pathPart.endsWith(":"))
-                pathParams.put("var" + (i - 1), pathPart);
+                pathParams.put("var" + (i - 1), pathPart.substring(1, pathPart.length() - 1));
         }
         return pathParams;
     }
