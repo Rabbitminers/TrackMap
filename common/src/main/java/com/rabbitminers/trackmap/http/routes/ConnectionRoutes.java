@@ -33,6 +33,7 @@ public class ConnectionRoutes {
                 networkId = UUID.fromString(pathVar);
             } catch (IllegalArgumentException e) {
                 out.write("HTTP/1.1 400 Bad Request\r\n".getBytes());
+                out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
                 out.write("\r\n".getBytes());
                 out.flush();
                 return;
@@ -40,17 +41,20 @@ public class ConnectionRoutes {
             JsonObject data = TrackGraphSerializer.serializeNetworkConnections(networkId);
             if (data == null) {
                 out.write("HTTP/1.1 418 I'm a teapot\r\n".getBytes());
+                out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
                 out.write("\r\n".getBytes());
                 out.flush();
                 return;
             }
             String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
             out.write(response.getBytes());
         } else {
             out.write("HTTP/1.1 405 Method Not Allowed\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("\r\n".getBytes());
             out.flush();
         }
