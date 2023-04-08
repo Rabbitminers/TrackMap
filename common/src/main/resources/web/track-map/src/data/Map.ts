@@ -1,5 +1,4 @@
-import { testData } from "./TestData";
-import type { Network, Node, Connection, Vec2 } from "./TrackGraphTypes";
+import type { Network, Node, Connection, Vec2, NetworkCollection } from "./TrackGraphTypes";
 
 export default class TrackMap {
   private canvas!: HTMLCanvasElement;
@@ -10,6 +9,8 @@ export default class TrackMap {
   private isPanning: boolean = false; // new flag
   private sensitivity: number = 0.1;
 
+  private networks: Network[] = new Array();
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -17,19 +18,46 @@ export default class TrackMap {
     this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.handleMouseUp.bind(this));
     this.canvas.addEventListener("mouseleave", this.handleMouseLeave.bind(this));
+
+    setInterval(() => { 
+      this.refreshData();
+    }, 10000)
   }
 
-  public init() {
+  public async init() {
     this.ctx.fillStyle = "ffffff";
-
-    testData.forEach((network) => this.renderNetwork(network));
+    await this.refreshData();
   }
 
-  private renderNetwork(network: Network) {
-    console.log("Rendered", network.id);
-    network.nodes.forEach((node) => this.renderNode(node));
-    network.connections.forEach((connection) => this.renderConnection(connection, network.nodes))
+  private async refreshData(): Promise<void> {
+    const ids: String[] = await this.getNetworks();
+    const networkDataPromises = ids.map(async (network: String) => {
+      const nodes: Node[] = await this.getNodes(network);
+      const connections: Connection[] = await this.getConnections(network);
+      return { id: network, nodes: nodes, connections: connections };
+    });
+    const networkData = await Promise.all(networkDataPromises);
+    this.networks = networkData;
+    this.renderCanvas();
   }
+
+  private async renderCanvas() {
+    this.networks.forEach(async (network: Network) => {
+      const nodes: Node[] = network.nodes;
+      this.renderNodes(nodes);
+      const connections: Connection[] = network.connections;
+      this.renderConnections(connections);
+    })
+  }
+
+  private async renderNodes(nodes: Node[]) {
+    nodes.forEach(async (node: Node) => this.renderNode(node));
+  }
+
+  private async renderConnections(connections: Connection[]) {
+    connections.forEach(async (connection: Connection) => this.renderConnection(connection));
+  }
+
 
   private renderNode(node: Node) {
     this.ctx.beginPath();
@@ -38,55 +66,38 @@ export default class TrackMap {
     this.ctx.fill();
   }
 
-  private renderConnection(connection: Connection, nodes: Node[]) {
-    console.log("Drew Connection For ", connection)
-    let firstNodePos: Vec2 = {x: 0, y: 0};
-    let secondNodePos: Vec2 = {x: 0, y: 0};
-    for (const node of nodes) {
-        if (node.id == connection.first) {
-            console.log("Found node " + node)
-            firstNodePos = {x: node.x, y: node.z}
-        }
-        if (node.id == connection.second) {
-            console.log("Found Second Node " + node)
-            secondNodePos = {x: node.x, y: node.z}
-        }
-        if (firstNodePos && secondNodePos) {
-            break;
-        }
-    };
-
-    /* DRAW A LINE FROM fristNodePos TO SecondNodePos*/
+  private renderConnection(connection: Connection) {
     this.ctx.beginPath();
-    this.ctx.moveTo(firstNodePos.x * this.scale + this.translateX, firstNodePos.y * this.scale + this.translateY);
-    this.ctx.lineTo(secondNodePos.x * this.scale + this.translateX, secondNodePos.y * this.scale + this.translateY);
+    this.ctx.moveTo(connection.first.x * this.scale + this.translateX, connection.first.z * this.scale + this.translateY);
+    this.ctx.lineTo(connection.second.x * this.scale + this.translateX, connection.second.z * this.scale + this.translateY);
+    this.ctx.strokeStyle = "#ffffff";
     this.ctx.stroke();
   }
 
   private handleMouseDown(event: MouseEvent) {
     this.canvas.style.cursor = "grabbing";
     this.canvas.addEventListener("mousemove", this.handlePan.bind(this));
-    this.isPanning = true; // set flag to true when mouse button is pressed
+    this.isPanning = true;
   }
 
   private handleMouseMove(event: MouseEvent) {
     if (event.buttons !== 1) {
       this.canvas.style.cursor = "grab";
       this.canvas.removeEventListener("mousemove", this.handlePan.bind(this));
-      this.isPanning = false; // set flag to false when mouse button is released
+      this.isPanning = false;
     }
   }
 
   private handleMouseUp(event: MouseEvent) {
     this.canvas.style.cursor = "grab";
     this.canvas.removeEventListener("mousemove", this.handlePan.bind(this));
-    this.isPanning = false; // set flag to false when mouse button is released
+    this.isPanning = false;
   }
 
   private handleMouseLeave(event: MouseEvent) {
     this.canvas.style.cursor = "grab";
     this.canvas.removeEventListener("mousemove", this.handlePan.bind(this));
-    this.isPanning = false; // set flag to false when mouse leaves canvas
+    this.isPanning = false;
   }
 
   private handlePan(event: MouseEvent) {
@@ -100,10 +111,65 @@ export default class TrackMap {
     this.translateY += dY;
     this.ctx.translate(dX, dY);
     this.clearCanvas();
-    testData.forEach((network) => this.renderNetwork(network));
+    this.renderCanvas();
   }
 
   private clearCanvas() {
     this.ctx.clearRect(-this.translateX / this.scale, -this.translateY / this.scale, this.canvas.width / this.scale, this.canvas.height / this.scale);
+  }
+
+  private async getNetworks(): Promise<String[]> {
+    return fetch('http://127.0.0.1:8080/networks')
+      .then(response => {
+        if (response.status == 200) {
+          return response.json()
+        } else {
+          throw new Error("Request failed")
+        }
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          return data;
+        } else {
+          throw new Error("Unexpected response")
+        }
+      })
+      .catch(error => {
+        throw new Error(`Failed to collect network data: ${error.message}`)
+      });
+  }
+
+  private async getNodes(network: String): Promise<Node[]> {
+    return fetch(`http://127.0.0.1:8080/nodes/:${network}:`)
+      .then(response => {
+        if (response.status == 200) {
+          return response.json()
+        } else {
+          throw new Error("Request failed")
+        }
+      })
+      .then(data => {
+          return data.nodes;
+      })
+      .catch(error => {
+        throw new Error(`Failed to collect node data for network ${network}: ${error.message}`)
+      })
+  }
+
+  private async getConnections(network: String): Promise<Connection[]> {
+    return fetch(`http://127.0.0.1:8080/connections/:${network}:`)
+      .then(response => {
+        if (response.status == 200) {
+          return response.json()
+        } else {
+          throw new Error("Request failed")
+        }
+      })
+      .then(data => {
+        return data.connections;
+      })
+      .catch(error => {
+        throw new Error(`Failed to collect connection data for network ${network}: ${error.message}`)
+      })
   }
 }
