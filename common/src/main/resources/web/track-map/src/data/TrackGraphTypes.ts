@@ -6,8 +6,8 @@ export interface Network {
 
 export interface Connection {
     length: number,
-    first: number,
-    second: number
+    first: Node,
+    second: Node
 }
 
 export interface Node {
@@ -21,4 +21,8 @@ export interface Node {
 export interface Vec2 {
     x: number,
     y: number
+}
+
+export interface NetworkCollection {
+    ids: String[]
 }
