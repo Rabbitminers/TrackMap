@@ -10,11 +10,13 @@ public class NetworkRoutes {
             JsonArray data = TrackGraphSerializer.getAllNetworks();
             String response = data.toString();
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("Content-Type: application/json\r\n".getBytes());
             out.write("\r\n".getBytes());
             out.write(response.getBytes());
         } else {
             out.write("HTTP/1.1 405 Method Not Allowed\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("\r\n".getBytes());
             out.flush();
         }

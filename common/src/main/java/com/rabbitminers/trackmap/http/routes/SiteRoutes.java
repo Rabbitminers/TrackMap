@@ -17,6 +17,7 @@ public class SiteRoutes {
             fileStream.close();
 
             out.write("HTTP/1.1 200 OK\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("Content-Type: text/html\r\n".getBytes());
             out.write(("Content-Length: " + fileBytes.length + "\r\n").getBytes());
             out.write("\r\n".getBytes());
@@ -24,6 +25,7 @@ public class SiteRoutes {
             out.write(fileBytes);
         } else {
             out.write("HTTP/1.1 405 Method Not Allowed\r\n".getBytes());
+            out.write("Access-Control-Allow-Origin: *\r\n".getBytes());
             out.write("\r\n".getBytes());
             out.flush();
         }
