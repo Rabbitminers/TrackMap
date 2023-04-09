@@ -1,7 +1,8 @@
 export interface Network {
     id: String,
-    connections: Connection[]
-    nodes: Node[]
+    connections: Connection[],
+    nodes: Node[],
+    colour: Colour
 }
 
 export interface Connection {
@@ -23,6 +24,38 @@ export interface Vec2 {
     y: number
 }
 
-export interface NetworkCollection {
-    ids: String[]
+export interface Vec3 {
+    x: number,
+    y: number,
+    z: number
+}
+
+export interface NetworkDiscovery {
+    id: String,
+    colour: Colour
+}
+
+export interface Colour {
+    r: number,
+    g: number,
+    b: number,
+    a: number
+}
+
+export interface Train {
+    owner: String,
+    speed: number,
+    id: number,
+    name: String,
+    carriages: Carriage[],
+    distance: number,
+    passengers: number
+}
+
+export interface Carriage {
+    stalled: boolean,
+    id: number,
+    twobogeys: boolean,
+    leading: Vec3,
+    trailing: Vec3
 }
