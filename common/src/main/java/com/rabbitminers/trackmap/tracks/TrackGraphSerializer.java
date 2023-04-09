@@ -9,19 +9,27 @@ import com.simibubi.create.content.logistics.trains.TrackNode;
 import com.simibubi.create.content.logistics.trains.TrackNodeLocation;
 import com.simibubi.create.content.logistics.trains.entity.Carriage;
 import com.simibubi.create.content.logistics.trains.entity.Train;
+import com.simibubi.create.foundation.utility.Color;
 import com.simibubi.create.foundation.utility.Couple;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 public class TrackGraphSerializer {
     public static JsonArray serializeTrains() {
         Set<Entry<UUID, Train>> trains = Create.RAILWAYS.trains.entrySet();
         return trains.stream().map(train -> serializeTrain(train.getValue()))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    @Nullable
+    public static JsonObject serializeTrain(UUID uuid) {
+        Map<UUID, Train> trains = Create.RAILWAYS.trains;
+        Train train = trains.get(uuid);
+        if (train == null) return null;
+        return serializeTrain(train);
     }
 
     public static JsonObject serializeTrain(Train train) {
@@ -34,17 +42,42 @@ public class TrackGraphSerializer {
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
         object.add("carriages", carriages);
         object.addProperty("distance", train.navigation.distanceToDestination);
+        object.addProperty("passengers", train.countPlayerPassengers());
         return object;
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public static JsonObject serializeCarriage(Carriage carriage) {
-        return new JsonObject();
+        JsonObject object = new JsonObject();
+        object.addProperty("stalled", carriage.stalled);
+        object.addProperty("id", carriage.id);
+        object.addProperty("twobogeys", carriage.isOnTwoBogeys());
+        JsonObject leading = new JsonObject();
+        writePosition(leading, carriage.getLeadingPoint().getPosition());
+        object.add("leading", leading);
+        JsonObject trailing = new JsonObject();
+        writePosition(trailing, carriage.getTrailingPoint().getPosition());
+        object.add("trailing", trailing);
+        return object;
     }
 
     public static JsonArray getAllNetworks() {
         Set<Entry<UUID, TrackGraph>> networks = Create.RAILWAYS.trackNetworks.entrySet();
-        return networks.stream().map(network -> network.getKey().toString())
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+        return networks.stream().map(network -> {
+            JsonObject object = new JsonObject();
+            object.addProperty("id", network.getKey().toString());
+            object.add("colour", serializeColour(network.getValue().color));
+            return object;
+        }).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    public static JsonObject serializeColour(Color color) {
+        JsonObject object = new JsonObject();
+        object.addProperty("r", color.getRed());
+        object.addProperty("g", color.getGreen());
+        object.addProperty("b", color.getBlue());
+        object.addProperty("a", color.getAlpha());
+        return object;
     }
 
     public static JsonArray serializeAllNodes() {
