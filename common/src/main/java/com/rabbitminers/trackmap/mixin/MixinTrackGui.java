@@ -89,9 +89,8 @@ public abstract class MixinTrackGui {
     private void renderNode(VertexConsumer buffers, Colour colour, TrackNode node) {
         Vec3 location = node.getLocation().getLocation();
         Matrix4f matrix = matrixStack.last().pose();
-        this.setColourBuffer(colour.getRed() / 255f, colour.getGreen() / 255f, colour.getBlue() / 255f, colour.getAlpha() / 255f);
         this.renderSolidRect(
-            matrix, buffers, (float) (location.x - this.cameraX), (float) (location.z - this.cameraZ), 30, 30, 0f, 10.0 / this.scale
+            matrix, buffers, (float) (location.x - this.cameraX), (float) (location.z - this.cameraZ), 2, 2, colour
         );
     }
 
@@ -102,9 +101,28 @@ public abstract class MixinTrackGui {
         float y,
         float width,
         float height,
-        float angle,
-        double sc
+        Colour colour
     ) {
-        this.drawObjectOnMap(matrixStack, vertexBuffer, x, y, angle, sc, 2.5F, 2.5F, 0, 69, 5, 5, 9729);
+        this.renderSolidRect(
+            matrix, vertexBuffer, x, y, width, height, colour.getRed() / 255f, colour.getGreen() / 255f, colour.getBlue() / 255f, colour.getAlpha() / 255f
+        );
+    }
+
+    private void renderSolidRect(
+        Matrix4f matrix,
+        VertexConsumer vertexBuffer,
+        float x,
+        float y,
+        float width,
+        float height,
+        float r,
+        float g,
+        float b,
+        float a
+    ) {
+        vertexBuffer.vertex(matrix, x + 0.0F, y + height, 0.0F).color(r, g, b, a).uv(3f / 256f, 5f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x + width, y + height, 0.0F).color(r, g, b, a).uv(5f / 256f, 5f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x + width, y + 0.0F, 0.0F).color(r, g, b, a).uv(5f / 256f, 3f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x + 0.0F, y + 0.0F, 0.0F).color(r, g, b, a).uv(3f / 256f, 3f / 256f).endVertex();
     }
 }
