@@ -30,10 +30,6 @@ public abstract class MixinTrackGui {
     @Shadow private double cameraZ;
     @Shadow private double scale;
 
-    @Shadow public abstract void drawObjectOnMap(PoseStack matrixStack, VertexConsumer guiLinearBuffer, double x, double z, float angle, double sc, float offX, float offY, int textureX, int textureY, int w, int h, int filter);
-
-    @Shadow protected abstract void setColourBuffer(float r, float g, float b, float a);
-
     private PoseStack matrixStack;
 
     private Collection<Train> allTrains() {
