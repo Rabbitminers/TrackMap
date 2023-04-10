@@ -27,6 +27,7 @@ configurations {
 repositories {
     // mavens for Forge-exclusives
     maven { url = "https://maven.theillusivec4.top/" } // Curios
+    maven { url = "https://cursemaven.com" } // Forge Config API Port & Xaeros
     maven { // Create Forge and Registrate Forge
         url = "https://maven.tterrag.com/"
         content {
@@ -46,6 +47,8 @@ dependencies {
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
     modImplementation("com.jozufozu.flywheel:flywheel-forge-${flywheel_forge_minecraft_version}:${flywheel_forge_version}")
 
+    // Xaeros
+    modImplementation("curse.maven:xaerosworldmap-${xaeros_project_id}:${xaeros_forge_version}")
     // Development QOL
     modLocalRuntime("mezz.jei:jei-${minecraft_version}:${jei_forge_version}")
 
