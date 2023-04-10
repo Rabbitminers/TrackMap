@@ -116,9 +116,9 @@ public abstract class MixinTrackGui {
         float b,
         float a
     ) {
-        vertexBuffer.vertex(matrix, x + 0.0F, y + height, 0.0F).color(r, g, b, a).uv(3f / 256f, 5f / 256f).endVertex();
-        vertexBuffer.vertex(matrix, x + width, y + height, 0.0F).color(r, g, b, a).uv(5f / 256f, 5f / 256f).endVertex();
-        vertexBuffer.vertex(matrix, x + width, y + 0.0F, 0.0F).color(r, g, b, a).uv(5f / 256f, 3f / 256f).endVertex();
-        vertexBuffer.vertex(matrix, x + 0.0F, y + 0.0F, 0.0F).color(r, g, b, a).uv(3f / 256f, 3f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x - width/2, y + height/2, 0.0F).color(r, g, b, a).uv(3f / 256f, 5f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x + width/2, y + height/2, 0.0F).color(r, g, b, a).uv(5f / 256f, 5f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x + width/2, y - height/2, 0.0F).color(r, g, b, a).uv(5f / 256f, 3f / 256f).endVertex();
+        vertexBuffer.vertex(matrix, x - width/2, y - height/2, 0.0F).color(r, g, b, a).uv(3f / 256f, 3f / 256f).endVertex();
     }
 }
