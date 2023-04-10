@@ -4,6 +4,7 @@
   "package": "com.rabbitminers.trackmap.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "MixinTrackGui"
   ],
   "mixins": [
   ],
